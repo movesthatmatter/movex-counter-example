@@ -1,25 +1,43 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useMemo } from 'react';
 import './App.css';
+import { MovexProvider } from 'movex-react';
+import movexConfig  from './movex.config';
+import { toRidAsStr, ResourceIdentifier } from 'movex';
+import { Counter } from './Counter';
+import { initialCounterState } from './counter.movex';
 
 function App() {
+  const counterRid = useMemo(() => {
+    const params = new URL(window.location as any).searchParams;
+    return params.get('rid') as ResourceIdentifier<'counter'>;
+  }, [window.location.href]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <MovexProvider
+      movexDefinition={movexConfig}
+      socketUrl="localhost:3333"
+      onConnected={(instance) => {
+        console.log('Movex Connected');
+
+        if (!counterRid) {
+          instance
+            .register('counter')
+            .create(initialCounterState)
+            .map((counterResource) => {
+              window.location.href += `?rid=${toRidAsStr(counterResource.rid)}`;
+            });
+        }
+      }}
+    >
+      <div className="App" style={{
+        height: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        {counterRid && <Counter rid={toRidAsStr(counterRid)} />}
+      </div>
+    </MovexProvider>
   );
 }
 
