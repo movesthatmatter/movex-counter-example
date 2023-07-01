@@ -1,5 +1,5 @@
 {
-  "name": "my-movex-app",
+  "name": "movex-counter-example",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
